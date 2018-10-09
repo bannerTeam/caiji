@@ -1,0 +1,9 @@
+.idea
+composer.lock
+*.log
+thinkphp
+runtime/
+.project
+.settings/
+public/down/
+
