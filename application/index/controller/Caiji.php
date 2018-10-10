@@ -297,10 +297,18 @@ class Caiji extends Controller
                         
                         $param['source_type_name'] = $type_name;
                         
-                        $param['source_video_url'] = $this->lu78_m3u8($domain . $link);
+                        
+                        $source_video_url = $this->lu78_m3u8($domain . $link);
+                        
+                        $param['source_video_url'] = $source_video_url;
                         
                         $param['source_pic'] = $v['pic'];
                         $param['website_id'] = 3;
+                        
+                        if(empty($source_video_url)){
+                            $param['state'] = 4;
+                            $param['remarks'] = '没有匹配到m3u8的视频';                            
+                        }                        
                         $res = $mode->saveData($param);
                         if ($res['status']) {
                             $arr['success'] ++;
@@ -309,6 +317,7 @@ class Caiji extends Controller
                             $arr['error'][] = $res['msg'];
                             echo ('<span>[失败-' . $res['msg'] . ']</span>' . $v['title'] . '<br/>');
                         }
+                        unset($param);
                     }
                     ob_flush();
                     flush();
@@ -349,11 +358,15 @@ class Caiji extends Controller
                 
                 if (count($arr) == 1) {
                     $m3u8 = $str;
-                } else if (count($arr) == 2) {
-                    $m3u8 = $arr[1];
+                } else if (count($arr) > 1) {                    
+                    $m3u8 = $arr[count($arr)-1];
                 } else {
                     $m3u8 = '';
+                }                
+                if(strpos($str, ".m3u8") === false){
+                    $m3u8 = '';
                 }
+                
                 return $m3u8;
             }
         }

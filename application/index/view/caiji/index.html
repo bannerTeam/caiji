@@ -43,7 +43,7 @@
 				d_m3u8 = cj[i].m3u8 ? `<a href="/index.php/index/caiji/${cj[i].m3u8}" >采集配置</a>` : "";
 				d_ts = cj[i].ts ? `<a href="/index.php/index/caiji/${cj[i].ts}" >采集切片</a>` : "";
 				
-				temp += `<li>${cj[i].title}<a onclick="startCj(${i})" href="javascript:;" >采集</a>&nbsp;&nbsp;&nbsp;${d_m3u8}&nbsp;&nbsp;&nbsp;${d_ts}</li>`;
+				temp += `<li>${cj[i].title}<a onclick="startCj(${i})" href="javascript:;" >采集入库</a>&nbsp;&nbsp;&nbsp;${d_m3u8}&nbsp;&nbsp;&nbsp;${d_ts}</li>`;
 			}			
 			$("#list").append(temp);
 			
