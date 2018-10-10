@@ -5,6 +5,7 @@ use think\Controller;
 use think\Db;
 use think\Request;
 use QL\QueryList;
+use think\Exception;
 
 class Caiji extends Controller
 {
@@ -426,7 +427,7 @@ class Caiji extends Controller
         $where['cut_count'] = 0;
         $where['state'] = 1;
         
-        $limit = 5;
+        $limit = 20;
         $datas = $mode->getList($where, 'id,title,source_video_url,source_pic',1,$limit);
         $list = $datas['list'];
         
@@ -447,18 +448,28 @@ class Caiji extends Controller
                 $data['cut_rule'] = $ret['rule'];
                 $data['path_cut'] = $ret['cut_path'];
                 $data['pic'] = $ret['pic'];
-                $r[] = $mode->saves($data);
+                $mode->saves($data);
                 
                 echo '======<b class="green">[完成:'.$v['title'].']</b>======<br/>';
-            }else{
+            }else{ 
+                $data['id'] = $v['id'];
+                $data['state'] = 4;
+                $mode->saves($data);
                 echo 'xxxxxxxxx<span>[失败:'.$v['title'].']</span>xxxxxxxxx<br/>';
             }
+            unset($data);
             ob_flush();
             flush();
         }
         
         echo '**********<b>[执行完成]</b>**********<br/>';
         
+        if(count($list) == $limit){
+            $url = '/index.php/index/caiji/lu78_download';
+            $this->download_jump($url,$sec=3);            
+        }else{
+            echo '**********<span>[全部执行结束]</span>**********<br/>';
+        }
         exit();
     }
 
@@ -823,10 +834,18 @@ class Caiji extends Controller
             curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout);
             $content = curl_exec($ch);
             curl_close($ch);
-        } else {
-            ob_start();
-            readfile(trim($url));
-            $content = ob_get_contents();
+        } else {            
+            try {
+                ob_start();
+                readfile(trim($url));
+                $content = ob_get_contents();
+            } catch (Exception $e) {
+                ob_end_clean();
+                return false;
+            } catch (ErrorException $e) {
+                ob_end_clean();
+                return false;
+            }
             ob_end_clean();
         }
         // echo $content;
