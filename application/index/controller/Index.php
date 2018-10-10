@@ -1,44 +1,15 @@
 <?php
 namespace app\index\controller;
 
-use QL\QueryList;
 
 class Index
 {
     public function index()
     {  
         
-        //采集某页面
-//         $data = QueryList::get('https://julyporn.com/api/video?sort_type=newest&page=1');
-//         $json_str = ($data->getHtml()); 
-//         $json = json_decode($json_str , true);        
-//         var_dump($json['data']);
-        
-        
-        $data = QueryList::get('http://api.cao2018.com/inc/api.php??m=collect-list-ac2--hour--xt-1-ct--group--flag-520ziyuancom_');
-        
-        //?m=collect-list-ac2--hour--xt-1-ct--group--flag-520ziyuancom_-apiurl-
-        //http://api.cao2018.com/inc/api.php
-        
-        var_dump($data);
-        exit;
-        $json_str = ($data->getHtml());
-        
-        
-        
-        $json = json_decode($json_str , true);
-        
-        
-        
-        
-        $this->vod_add($json['data']);        
-        
-        
-        
-        //http://www.sex8.com/admin/index.php?
-        //m=collect-cj-ac2-day-hour-24-xt-1-ct--group--flag-dasenlin_top-
-        //apiurl-http://www.520ziyuan.com//inc/api.php
-        
+
+       echo 'a';
+       exit;
         
     }
     
