@@ -441,7 +441,7 @@ class Caiji extends Controller
         $where['state'] = 1;
         
         $limit = 20;
-        $datas = $mode->getList($where, 'id,title,source_video_url,source_pic',1,$limit);
+        $datas = $mode->getList($where, 'id,title,source_video_url,source_pic',1,$limit,'id asc');
         $list = $datas['list'];
         
         $r = array();
@@ -463,7 +463,7 @@ class Caiji extends Controller
                 $data['pic'] = $ret['pic'];
                 $mode->saves($data);
                 
-                echo '======<b class="green">[完成:'.$v['title'].']</b>======<br/>';
+                echo '======<b class="green">[完成:'.$v['title'].']</b>'.$ret['error'].'======<br/>';
             }else{ 
                 $data['id'] = $v['id'];
                 $data['state'] = 4;
@@ -517,6 +517,9 @@ class Caiji extends Controller
             return false;
         }
         $pic = '';
+        
+        $error = '';
+        
         //下载封面
         if($source_pic){
             $save_dir_pic = "./down/video/lu78/" . $path_key . '/';
@@ -525,6 +528,8 @@ class Caiji extends Controller
             $res = $this->getFile($source_pic, $save_dir_pic, $filename_pic);
             if($res){
                 $pic = $save_dir_pic.$filename_pic;
+            }else{
+                $error = '<br/>封面图片下载失败<br/>';
             }
         }
         
@@ -579,6 +584,7 @@ class Caiji extends Controller
         $ret['rule'] = $cut_rule;
         $ret['cut_path'] = $save_dir_ts;
         $ret['pic'] = $pic;
+        $ret['error'] = $error;        
         
         return $ret;
         
@@ -665,6 +671,46 @@ class Caiji extends Controller
     
     /**
      * 采集站点：http://www.52lu78.com
+     * 继续下载 未完成的切片
+     */
+    public function lu78_download_ts_re()
+    {    
+        
+        set_time_limit(0);
+        $mode = model('Vod');
+        
+        print str_repeat(" ", 4096);
+        echo ('<style type="text/css">body{font-size:12px;color: #333333;line-height:21px;}span{font-weight:bold;color:#FF0000}b{color:#4c6dec;}b.green{color:green;}</style>');
+        
+        //查询  90分钟内 未下载切片的，且状态为 正在下载
+        $where['website_id'] = 3;     
+        $where['state'] = array('eq',2);        
+        $where['last_time'] = array('lt',time()-(60*90));
+        $data = $mode->getInfo($where);
+                
+        if(empty($data)){
+            echo '**********<span>[没有未完成的视频任务]</span>**********<br/>';
+            exit;
+        }
+        
+        echo '**********<b>[准备执行下个任务]</b>**********<br/>';
+        
+        
+        echo $data['title'].'<br/>';
+        
+        ob_flush();
+        flush();
+        
+        
+        $url = '/index.php/index/caiji/lu78_download_ts?id='.$data['id'];
+        $this->download_jump($url);
+                        
+        
+        exit();
+    }
+    
+    /**
+     * 采集站点：http://www.52lu78.com
      * 逐个下载切片
      */
     public function lu78_download_ts_line($v)
@@ -741,7 +787,7 @@ class Caiji extends Controller
      */
     public function download_jump($url,$sec=2)
     {
-        echo '<script>setTimeout(function (){location.href="'.$url.'";},'.($sec*1000).');</script><span>暂停'.$sec.'秒后继续  >>>  </span><a href="'.$url.'" >如果您的浏览器没有自动跳转，请点击这里</a><br>';
+        echo '<script>setTimeout(function (){location.href="'.$url.'";},'.($sec*1000).');</script><br><span>暂停'.$sec.'秒后继续  >>>  </span><a href="'.$url.'" >如果您的浏览器没有自动跳转，请点击这里</a><br>';
     }
     
     /**
@@ -763,6 +809,9 @@ class Caiji extends Controller
         
         var_dump($res);
     }
+   
+    
+    
 
     function echo()
     {

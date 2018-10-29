@@ -111,6 +111,7 @@ class Vod extends Base
     public function getList($where, $field = '*', $page = 1, $limit = 10, $order = 'id desc')
     {
         
+        $list =  array();
         // ->where('download_count','<','cut_count')
         // ->where('cut_count', 'exp', Db::raw('>download_count'))
         // $where['download_count'][] = ['cut_count', 'exp', Db::raw('>download_count')];

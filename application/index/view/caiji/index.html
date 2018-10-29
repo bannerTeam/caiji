@@ -41,7 +41,7 @@
 				
 				
 				d_m3u8 = cj[i].m3u8 ? `<a href="/index.php/index/caiji/${cj[i].m3u8}" >采集配置</a>` : "";
-				d_ts = cj[i].ts ? `<a href="/index.php/index/caiji/${cj[i].ts}" >采集切片</a>` : "";
+				d_ts = cj[i].ts ? `<a href="/index.php/index/caiji/${cj[i].ts}" >采集切片</a>&nbsp;&nbsp;&nbsp;<a href="/index.php/index/caiji/${cj[i].ts}_re" >补充采集切片</a>` : "";
 				
 				temp += `<li>${cj[i].title}<a onclick="startCj(${i})" href="javascript:;" >采集入库</a>&nbsp;&nbsp;&nbsp;${d_m3u8}&nbsp;&nbsp;&nbsp;${d_ts}</li>`;
 			}			

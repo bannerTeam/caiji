@@ -4,29 +4,29 @@ namespace app\common\util;
 class Pinyin
 {
     private static $pinyins = null;
-
+    
     public function __construct() {
-
+        
     }
-
+    
     public static function get($str, $ret_format = 'all', $placeholder = '_', $allow_chars = '/[a-zA-Z\d ]/') {
-
+        
         if (null === self::$pinyins) {
             $data = file_get_contents('./static/data/pinyin.dat');
-
+            
             $rows = explode('|', $data);
-
+            
             self::$pinyins = array();
             foreach($rows as $v) {
                 list($py, $vals) = explode(':', $v);
                 $chars = explode(',', $vals);
-
+                
                 foreach ($chars as $char) {
                     self::$pinyins[$char] = $py;
                 }
             }
         }
-
+        
         $str = trim($str);
         $len = mb_strlen($str, 'UTF-8');
         $rs = '';
@@ -46,7 +46,7 @@ class Pinyin
                     $rs .= $placeholder;
                 }
             }
-
+            
             if ('one' === $ret_format && '' !== $rs) {
                 return $rs[0];
             }
@@ -54,5 +54,5 @@ class Pinyin
         $rs = str_replace([' ','+','/','\\','|','\'','?','%','#','&','=','!','(',')',';',':','<','>'],'',$rs);
         return $rs;
     }
-
+    
 }

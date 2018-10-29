@@ -12,13 +12,13 @@ return [
     // 数据库类型
     'type'            => 'mysql',
     // 服务器地址
-    'hostname'        => '192.74.237.241',
+    'hostname'        => 'localhost',
     // 数据库名
     'database'        => 'caijidb',
     // 用户名
-    'username'        => 'banana',
+    'username'        => 'root',//banana
     // 密码
-    'password'        => 'AbeF_*11@1-2_Abd',
+    'password'        => 'root',//AbeF_*11@1-2_Abd
     // 端口
     'hostport'        => '3306',
     // 连接dsn
