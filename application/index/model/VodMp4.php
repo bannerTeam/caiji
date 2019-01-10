@@ -20,8 +20,7 @@ class VodMp4 extends Base
     protected $createTime = 'add_time';
 
     protected $rule = [
-        'title' => 'require',
-        'source' => 'require|unique:vod'
+        'title' => 'require'
     ];
 
     protected $message = [
@@ -131,7 +130,7 @@ class VodMp4 extends Base
         $count = $this->field('id')
             ->where($where)
             ->count();
-        
+          
         $first = ($page - 1) * $limit;
         if ($count) {
             
@@ -139,11 +138,16 @@ class VodMp4 extends Base
                 ->where($where)
                 ->limit($first, $limit)
                 ->order($order)
-                ->select();
+                ->paginate();
+                //->select();
         }
+        
         
         $ret['count'] = $count;
         $ret['list'] = $list;
+        $ret['page'] = $page;
+        $ret['pagecount'] = ceil($count / $limit);
+               
         
         return $ret;
     }

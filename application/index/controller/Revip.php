@@ -18,11 +18,33 @@ class Revip extends Controller
         $arr = [];
         
         $w1 = [];
-        $mode->getCount($w1);
+        $arr['total'] = $mode->getCount($w1);
+        
+        $w2 = [];
+        $w2['source_video_url'] = '';
+        $arr['video_empty'] = $mode->getCount($w2);
+        
+        $w3 = [];
+        $w3['source_video_url'] = array(
+            'neq',
+            ''
+        );
+        $w3['state'] = 1;
+        $arr['video_download'] = $mode->getCount($w3);
+        
+        $this->assign('count', $arr);
         
         return $this->fetch();
     }
 
+    /**
+     * 测试插件是否正常
+     */
+    public function test(){
+        echo file_get_contents('https://www.baidu.com/');
+        exit();
+    }
+    
     public function baidu()
     {
         echo file_get_contents('https://www.baidu.com/');
@@ -35,6 +57,38 @@ class Revip extends Controller
         exit();
     }
 
+    
+    
+    public function lst(){
+        
+       
+        $param = input();
+        
+        $this->assign('domain', $_SERVER['SERVER_NAME']);
+        
+        $page = isset($param['page']) ? $param['page'] : 1;
+        $limit = isset($param['limit']) ? $param['limit'] : 20;
+        
+        $state = isset($param['state']) ? $param['state'] : 0;        
+        
+        $mode = model('VodMp4');
+        $where = [];
+        if(!empty($status)){
+            $where['state'] = $state;
+        }
+        
+        $res = $mode->getList($where, '*',  $page , $limit, $order = 'source_data_format desc');
+       
+        
+        
+        $this->assign('list', $res['list']);
+        $this->assign('res', $res);
+        
+      
+        
+        return $this->fetch();
+    }
+    
     /**
      * http://caiji.sex.com/index.php/index/revip/list
      * 根据分类id,查询对应的列表
@@ -74,7 +128,7 @@ class Revip extends Controller
         
         $data = $rt->all();
         if (count($data) == 0) {
-            echo ('<b>=========【采集失败】=======</b><br/>');
+            echo ('<b>=========【采集失败】=======</b><br/><a href="/index.php/index/revip/index">返回>> </a><br/><br/>');
             exit();
         }
         
@@ -137,7 +191,7 @@ class Revip extends Controller
                     print str_repeat(" ", 4096);
                     
                     if (intval($arr['exists']) > 5) {
-                        echo ('<span>=====[出现5条重复数据，停止采集]=======</span><br/>');
+                        echo ('<span>=====[出现5条重复数据，停止采集]=======</span><br/><a href="/index.php/index/revip/">返回>> </a><br/><br/>');
                         exit();
                     }
                     
@@ -161,6 +215,11 @@ class Revip extends Controller
                             
                             // 采集视频发布的时间
                             $param['source_data'] = $v['data'];
+                            
+                            //格式化时间
+                            $param['source_data_format'] = self::data_format($v['data']);
+                                                        
+                            $param['source_video_url'] = '';
                             
                             $res = $mode->saveData($param);
                             if ($res['status']) {
@@ -189,7 +248,7 @@ class Revip extends Controller
             sleep(1);
         }
         
-        echo ('<b class="green">*********【结束采集】*********</b><br/>');
+        echo ('<b class="green">*********【结束采集】*********</b><br/><a href="/index.php/index/revip/">返回>> </a><br/><br/>');
     }
 
     /**
@@ -207,12 +266,12 @@ class Revip extends Controller
     {
         $mode = model('VodMp4');
         $where['source_video_url'] = '';
-        $res = $mode->getList($where, '*', 1, 50, 'id asc');
+        $res = $mode->getList($where, '*', 1, 50, 'source_data_format desc');
         
         $count = $res['count'];
         $list = $res['list'];
         if (count($list) == 0) {
-            echo '没有可以采集的数据';
+            echo '没有可以采集的数据<br/><a href="/index.php/index/revip/">返回>> </a><br/>';
             exit();
         }
         
@@ -273,6 +332,7 @@ class Revip extends Controller
             }
             
             echo ('加载：[ ' . $v['source'] . ']------<br/>');
+            print str_repeat(" ", 4096);
             ob_flush();
             flush();
         }
@@ -322,7 +382,7 @@ class Revip extends Controller
         if ($file_count > 0) {
             echo '<br/><a href="?del=1">删除日志</a><br/><br/><a href="/index.php/index/revip/">返回>> </a><br/>';
         } else {
-            echo '没有日志文件';
+            echo '没有日志文件<br/><a href="/index.php/index/revip/">返回>> </a><br/>';
         }
         
         exit();
@@ -370,7 +430,7 @@ class Revip extends Controller
         $limit = 10;
         
         if ($pagination * $limit > $count) {
-            echo ('=========[全部完成，执行了 ' . ($count) . '个任务]=======<br/>');
+            echo ('=========[全部完成，执行了 ' . ($count) . '个任务]=======<br/><br/><a href="/index.php/index/revip/">返回>> </a><br/>');
             exit();
         }
         
@@ -381,7 +441,7 @@ class Revip extends Controller
             ''
         );
         $where['state'] = 1;
-        $res = $mode->getList($where, 'id,title,source,source_video_url', 1, $limit, 'id asc');
+        $res = $mode->getList($where, 'id,title,source,source_video_url', 1, $limit, 'source_data_format desc');
         
         $list = $res['list'];
         
@@ -422,12 +482,15 @@ class Revip extends Controller
             $wget = "wget -b -N --no-check-certificate -o " . $log_dir . ' ' . $url . ' -O ' . $save_dir;
             
             echo ('保存路径:  ' . $save_dir . '<br/>');
-            echo $wget;
+            //echo $wget;
             echo '<br/>';
             // 下载数据
-            // $rel = shell_exec($wget);
-            // var_dump($rel);
+            $rel = shell_exec($wget);
+            //var_dump($rel);
             echo '<br/>';
+            
+            ob_flush();
+            flush();
             
             // 更新视频下载状态
             $d = [];
@@ -436,19 +499,129 @@ class Revip extends Controller
             $d['state'] = 2;
             $mode->saves($d);
             
-            ob_flush();
-            flush();
             sleep(1);
         }
         
         if ($limit * $pagination >= $count) {
-            echo ('=========[全部完成，执行了 ' . ($count) . '个任务]=======<br/>');
+            echo ('=========[全部完成，执行了 ' . ($count) . '个任务]=======<br/><br/><a href="/index.php/index/revip/index">返回>> </a><br/>');
             exit();
         }
         
-        self::download_jump('/index.php/index/revip/download?count=' . $count . '&pagination=' . ($pagination + 1));
+        self::download_jump('/index.php/index/revip/download?count=' . $count . '&pagination=' . ($pagination + 1), 5);
         
         exit();
+    }
+
+    
+    private function data_format($str){
+        
+        // 一天
+        $day = (60 * 60 * 24);
+        
+        // 默认当前时间
+        $data_format = time();
+        
+        $add_time = time();
+        
+        if (strpos($str, '天') !== false) {
+            $data_format = $add_time - $day * intval($str);
+        } else if (strpos($str, '周') !== false) {
+            $data_format = $add_time - $day * 7 * intval($str);
+        } else if (strpos($str, '月') !== false) {
+            $data_format = $add_time - $day * 30 * intval($str);
+        } else if (strpos($str, '年') !== false) {
+            $data_format = $add_time - $day * 365 * intval($str);
+        } else if (strpos($str, '小时') !== false) {
+            $data_format = $add_time - (60 * 60) * intval($str) ;
+        }
+        
+        return $data_format;
+    }
+    
+    public function print(){
+        
+        set_time_limit(0);
+        $count  = 10;
+        
+        //ob_end_clean();     //在循环输出前，要关闭输出缓冲区   
+       
+        echo str_repeat(" ", 4096);  
+        
+        print str_repeat(" ", 4096);
+        echo ('<style type="text/css">body{font-size:12px;color: #333333;line-height:21px;}span{font-weight:bold;color:#FF0000}b{color:#4c6dec;}b.green{color:green;}</style>');
+        
+        
+        for ($i = 0; $i < $count; $i++) {
+            
+            echo "#$i 完毕<hr>";
+            print "#$i 完毕<hr>";
+            
+            echo str_pad(" ", 4096); 
+            print str_repeat(" ", 4096);
+            
+            
+            ob_flush();
+            flush();
+            sleep(1);
+        }        
+        
+        exit();
+        
+    }
+    
+    public function demo_data_format()
+    {
+        $mode = model('VodMp4');
+        
+        $where = [];
+        $where['source_data_format'] = '0';
+        $res = $mode->getList($where, 'id,source_data,add_time', 1, 13000);
+        
+        $list = $res['list'];
+        if (count($list) == 0) {
+            echo '全部更新完成';
+            exit();
+        }
+        
+        $find = [
+            '周',
+            '天',
+            '年',
+            '月',
+            '小时'
+        ];
+        
+        // 一天
+        $day = (60 * 60 * 24);
+        
+        foreach ($list as $k => $v) {
+            
+            $str = $v['source_data'];
+            
+            $add_time = $v['add_time'];
+            
+            // 默认当前时间
+            $data_format = time();
+            
+            if (strpos($str, '天') !== false) {
+                $data_format = $add_time - $day * intval($str);
+            } else if (strpos($str, '周') !== false) {
+                $data_format = $add_time - $day * 7 * intval($str);
+            } else if (strpos($str, '月') !== false) {
+                $data_format = $add_time - $day * 30 * intval($str);
+            } else if (strpos($str, '年') !== false) {
+                $data_format = $add_time - $day * 365 * intval($str);
+            } else if (strpos($str, '小时') !== false) {
+                $data_format = $add_time - (60 * 60) * intval($str) ;
+            }
+            
+            $d['id'] = $v['id'];
+            $d['source_data_format'] = $data_format;
+            
+            $r = $mode->saves($d);
+        }
+        
+        // self::download_jump('/index.php/index/revip/data_format');
     }
 
     /**

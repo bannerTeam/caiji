@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>列表</title>
+		<style>
+			table{ width: 100%;}
+			table th{ width: 25%;}
+			table td{ padding: 5px;}
+			
+			ul, ol, li {
+    list-style: none;
+}
+			.pagination{}
+			.pagination li{ display: inline; }
+			.pagination li a{ font-size: 16px; padding: 10px; color: blue;}
+			.pagination li a:hover{ color: #ff6600;}
+		</style>
+	</head>
+	<body>
+		<p>
+			<a href="/index.php/index/revip/index">返回首页</a>
+		</p>
+		<div>
+			{$list->render()}
+		</div>
+		<table border="1">
+			<thead>
+				<tr>
+					<th>标题</th>
+					<th>99热地址</th>
+					<th>本地地址</th>		
+					<th style="width: 120px;">采集日期</th>	
+				</tr>
+			</thead>
+			<tbody>
+				{volist name="list" id="vo"}
+				<tr>
+					<td>{$vo.title}</td>
+					<td>
+						<a href="{$vo.source}" target="_blank">
+						{$vo.source}
+						</a>
+					</td>
+					<td>
+						<a href="//{$domain}/{$vo.path}" target="_blank">
+						{$vo.path}
+						</a>
+					</td>
+					<td>
+						{:date('Y-m-d H:i:s',$vo.add_time)}
+					</td>
+				</tr>
+				{/volist}
+			</tbody>
+		</table>
+		<div>
+			{$list->render()}
+		</div>
+		<p>
+			<a href="/index.php/index/revip/index">返回首页</a>
+		</p>
+	</body>
+</html>
